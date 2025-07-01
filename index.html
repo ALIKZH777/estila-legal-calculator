@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم محاسبات حقوقی استیلا</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Vazirmatn', sans-serif;
+        }
+        .tab-link {
+            transition: all 0.3s ease;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-link.active {
+            border-color: #60a5fa; /* blue-400 */
+            color: #eff6ff; /* blue-50 */
+        }
+        .fraction {
+            display: inline-block; text-align: center; vertical-align: middle;
+        }
+        .fraction > span { display: block; padding: 0 0.3em; }
+        .fraction .numerator { border-bottom: 1px solid currentColor; }
+        .result-table th, .result-table td { padding: 12px 16px; text-align: center; }
+        input:focus, select:focus {
+            outline: 2px solid transparent; outline-offset: 2px;
+            --tw-ring-color: #60a5fa;
+            box-shadow: 0 0 0 2px var(--tw-ring-color);
+        }
+        .summary-table td { padding: 8px 12px; }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-200">
+
+    <div class="container mx-auto p-4 sm:p-6 md:p-8 max-w-5xl">
+        
+        <header class="text-center mb-6 relative">
+            <div class="flex justify-center items-center gap-3">
+                <div class="w-12 h-12 flex items-center justify-center">
+                    <img src="https://uploadkon.ir/uploads/0e6f01_259839716.png" alt="لوگوی استیلا" class="w-full h-full object-contain">
+                </div>
+                <h1 class="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-100">سیستم محاسبات حقوقی استیلا</h1>
+            </div>
+            <p class="mt-3 text-base sm:text-lg text-gray-400">دستیار هوشمند شما در محاسبات حقوقی</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="mb-4 border-b border-gray-700">
+            <nav class="flex flex-wrap -mb-px" aria-label="Tabs">
+                <button class="tab-link active flex items-center gap-2 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-3 font-bold text-base sm:text-lg text-gray-400" onclick="openTab(event, 'home')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z" /></svg>صفحه اصلی</button>
+                <button class="tab-link flex items-center gap-2 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-3 font-bold text-base sm:text-lg text-gray-400" onclick="openTab(event, 'inheritance')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15 4a1 1 0 00-1-1H6a1 1 0 00-1 1v2a1 1 0 001 1h1a1 1 0 001-1V6h4v1a1 1 0 001 1h1a1 1 0 001-1V4zM5 9a1 1 0 00-1 1v6a1 1 0 001 1h10a1 1 0 001-1v-6a1 1 0 00-1-1H5z" clip-rule="evenodd" /></svg>سهم الارث</button>
+                <button class="tab-link flex items-center gap-2 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-3 font-bold text-base sm:text-lg text-gray-400" onclick="openTab(event, 'mahr')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M4 4a2 2 0 00-2 2v4a2 2 0 002 2v4a2 2 0 002 2h8a2 2 0 002-2v-4a2 2 0 002-2V6a2 2 0 00-2-2H4zm2 6a1 1 0 100 2 1 1 0 000-2zm8-1a1 1 0 11-2 0 1 1 0 012 0z" clip-rule="evenodd" /></svg>مهریه</button>
+                <button class="tab-link flex items-center gap-2 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-3 font-bold text-base sm:text-lg text-gray-400" onclick="openTab(event, 'ujrat')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M8.433 7.418c.155-.103.346-.196.567-.267v1.698a2.5 2.5 0 00-1.134 0V7.418zM12.25 10.5a2.5 2.5 0 01-2.5-2.5V7.151c.22.07.412.164.567.267v1.698c.635 0 1.134-.5 1.134-1.134V7.418c.155.103.346.196.567.267v2.815z" /><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11a1 1 0 10-2 0v2a1 1 0 102 0V7zm1-4a1 1 0 011 1v2a1 1 0 11-2 0V4a1 1 0 011-1zm3 4a1 1 0 10-2 0v2a1 1 0 102 0V7z" clip-rule="evenodd" /></svg>اجرت المثل</button>
+                <button class="tab-link flex items-center gap-2 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-3 font-bold text-base sm:text-lg text-gray-400" onclick="openTab(event, 'costs')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M2 11a1 1 0 011-1h2a1 1 0 011 1v5a1 1 0 01-1 1H3a1 1 0 01-1-1v-5zM8 7a1 1 0 011-1h2a1 1 0 011 1v9a1 1 0 01-1 1H9a1 1 0 01-1-1V7zM14 4a1 1 0 011-1h2a1 1 0 011 1v12a1 1 0 01-1 1h-2a1 1 0 01-1-1V4z" /></svg>هزینه دادرسی</button>
+                <button class="tab-link flex items-center gap-2 whitespace-nowrap py-3 px-2 sm:py-4 sm:px-3 font-bold text-base sm:text-lg text-gray-400" onclick="openTab(event, 'nafaqeh')"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path d="M10 3.5a1.5 1.5 0 013 0V4a1 1 0 001 1h3a1 1 0 011 1v3a1 1 0 01-1 1h-.5a1.5 1.5 0 000 3h.5a1 1 0 011 1v3a1 1 0 01-1 1h-3a1 1 0 01-1-1v-.5a1.5 1.5 0 00-3 0v.5a1 1 0 01-1 1H6a1 1 0 01-1-1v-3a1 1 0 011-1h.5a1.5 1.5 0 000-3H6a1 1 0 01-1-1V6a1 1 0 011-1h3a1 1 0 001-1v-.5z" /></svg>تخمین نفقه</button>
+            </nav>
+        </div>
+
+        <main>
+            <!-- Home Tab -->
+            <div id="home" class="tab-content bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-700">
+                <h2 class="text-2xl font-bold text-gray-200 mb-4">به سیستم محاسبات حقوقی استیلا خوش آمدید</h2>
+                <p class="text-gray-400 mb-8">این مجموعه ابزار برای کمک به شما در انجام محاسبات پیچیده حقوقی بر اساس قوانین ایران طراحی شده است. می‌توانید از تب‌های بالا برای دسترسی به هر یک از محاسبه‌گرها استفاده کنید.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-lg text-blue-400 mb-2">محاسبه سهم الارث</h3>
+                        <p class="text-gray-400">محاسبه دقیق سهم هر یک از وراث طبقه اول با در نظر گرفتن دیون و وصیت متوفی.</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-lg text-green-400 mb-2">محاسبه مهریه</h3>
+                        <p class="text-gray-400">ارزش مهریه (سکه یا وجه نقد) را به نرخ روز و بر اساس روش‌های مختلف قانونی محاسبه کنید.</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-lg text-yellow-400 mb-2">محاسبه اجرت المثل</h3>
+                        <p class="text-gray-400">برآورد مبلغ اجرت‌المثل ایام زوجیت بر اساس سال‌های زندگی مشترک و حداقل دستمزد.</p>
+                    </div>
+                     <div class="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-lg text-purple-400 mb-2">هزینه دادرسی</h3>
+                        <p class="text-gray-400">تخمین هزینه دادرسی برای دعاوی مالی و غیرمالی بر اساس تعرفه‌های قضایی.</p>
+                    </div>
+                    <div class="bg-gray-900/50 p-6 rounded-lg border border-gray-700">
+                        <h3 class="font-bold text-lg text-pink-400 mb-2">تخمین نفقه</h3>
+                        <p class="text-gray-400">برآورد اولیه مبلغ نفقه ماهیانه با وارد کردن هزینه‌های متعارف زندگی.</p>
+                    </div>
+                </div>
+                <div class="mt-10 p-6 bg-teal-900/50 rounded-lg border border-teal-700 text-center">
+                    <h3 class="font-bold text-lg text-teal-300 mb-2">نیاز به مشاوره تخصصی دارید؟</h3>
+                    <p class="text-gray-300 mb-4">برای دریافت مشاوره حقوقی کامل و پاسخ به سوالات خود، با تیم حقوقی استیلا تماس بگیرید.</p>
+                    <a href="tel:09005003835" class="inline-block bg-teal-500 text-white font-bold py-2 px-6 rounded-lg hover:bg-teal-600 transition-colors text-lg">
+                        تماس با ما: 09005003835
+                    </a>
+                </div>
+                 <p class="text-center mt-10 text-sm text-gray-500">سلب مسئولیت: این ابزار صرفاً جهت اطلاع‌رسانی و برآورد اولیه است و به هیچ عنوان جایگزین مشاوره با وکیل یا کارشناس حقوقی نیست.</p>
+            </div>
+
+            <!-- Inheritance Tab -->
+            <div id="inheritance" class="tab-content hidden bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-700">
+                <form id="form-section-inheritance">
+                    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                        <div class="p-6 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-300 border-b border-gray-600 pb-2">۱. اطلاعات ماترک</h3>
+                            <div>
+                                <label for="total-assets" class="block text-md font-medium text-gray-300 mb-2">ارزش کل ماترک (تومان)</label>
+                                <input type="text" id="total-assets" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="مثال: 1000000000" onkeyup="formatCurrency(this)">
+                            </div>
+                            <div class="mt-4">
+                                <label for="deceased-gender" class="block text-md font-medium text-gray-300 mb-2">جنسیت متوفی</label>
+                                <select id="deceased-gender" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white">
+                                    <option value="male">مرد</option>
+                                    <option value="female">زن</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-300 border-b border-gray-600 pb-2">۲. دیون و وصیت</h3>
+                            <div class="space-y-3">
+                                <div>
+                                    <label for="will-amount" class="block text-sm font-medium text-gray-400">مبلغ وصیت‌نامه (تومان)</label>
+                                    <input type="text" id="will-amount" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                                </div>
+                                <div>
+                                    <label for="mahr-deduction" class="block text-sm font-medium text-gray-400">مهریه (تومان)</label>
+                                    <input type="text" id="mahr-deduction" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                                </div>
+                                <div>
+                                    <label for="nafaqeh-deduction" class="block text-sm font-medium text-gray-400">نفقه معوقه (تومان)</label>
+                                    <input type="text" id="nafaqeh-deduction" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                                </div>
+                                 <div>
+                                    <label for="burial-costs" class="block text-sm font-medium text-gray-400">هزینه کفن و دفن (تومان)</label>
+                                    <input type="text" id="burial-costs" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                                </div>
+                                <div>
+                                    <label for="other-debts" class="block text-sm font-medium text-gray-400">سایر دیون (وام و...)</label>
+                                    <input type="text" id="other-debts" class="w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6 bg-gray-900/50 rounded-xl border border-gray-700">
+                            <h3 class="text-xl font-semibold mb-4 text-gray-300 border-b border-gray-600 pb-2">۳. اطلاعات وراث (طبقه اول)</h3>
+                            <div class="space-y-3">
+                                <div class="flex items-center justify-between">
+                                    <label for="wife-count" class="text-md font-medium text-gray-300">تعداد همسران دائم</label>
+                                    <input type="number" id="wife-count" min="0" max="4" value="1" class="w-24 p-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-white">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-md font-medium text-gray-300">پدر در قید حیات است؟</span>
+                                    <input type="checkbox" id="father-alive" class="h-6 w-6 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-600">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <span class="text-md font-medium text-gray-300">مادر در قید حیات است؟</span>
+                                    <input type="checkbox" id="mother-alive" class="h-6 w-6 text-blue-500 rounded border-gray-600 bg-gray-700 focus:ring-blue-600">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label for="son-count" class="text-md font-medium text-gray-300">تعداد پسران</label>
+                                    <input type="number" id="son-count" min="0" value="0" class="w-24 p-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-white">
+                                </div>
+                                <div class="flex items-center justify-between">
+                                    <label for="daughter-count" class="text-md font-medium text-gray-300">تعداد دختران</label>
+                                    <input type="number" id="daughter-count" min="0" value="0" class="w-24 p-2 bg-gray-700 border border-gray-600 rounded-lg text-center text-white">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
+                        <button type="button" id="calculate-btn-inheritance" class="w-full sm:w-auto text-white bg-blue-500 hover:bg-blue-600 font-semibold rounded-lg text-lg px-12 py-3">محاسبه کن</button>
+                        <button type="button" id="reset-btn-inheritance" class="w-full sm:w-auto text-gray-200 bg-gray-600 hover:bg-gray-500 font-semibold rounded-lg text-lg px-12 py-3">پاک کردن فرم</button>
+                    </div>
+                </form>
+                <div id="error-message-inheritance" class="hidden bg-red-900/30 border-r-4 border-red-500 text-red-300 px-4 py-3 rounded-lg relative my-6" role="alert"></div>
+                <div id="result-section-inheritance" class="mt-10 hidden"></div>
+            </div>
+
+            <!-- Mahr Tab -->
+            <div id="mahr" class="tab-content hidden bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-700">
+                <h2 class="text-2xl font-bold text-gray-200 mb-2">محاسبه مهریه به نرخ روز</h2>
+                <p class="text-gray-400 mb-6">این بخش به شما کمک می‌کند ارزش روز مهریه خود را محاسبه کنید.</p>
+                
+                <div>
+                    <label for="mahr-type" class="block text-md font-medium text-gray-300 mb-2">نوع مهریه را انتخاب کنید:</label>
+                    <select id="mahr-type" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white">
+                        <option value="coin_current_price">سکه (پرداخت به تعداد با قیمت روز)</option>
+                        <option value="coin_indexed">معادل ریالی سکه در زمان عقد (به‌روز شده با شاخص)</option>
+                        <option value="cash_indexed">وجه نقد (به‌روز شده با شاخص)</option>
+                    </select>
+                </div>
+
+                <!-- Mahr Type 1: Coin by current price -->
+                <div id="mahr-coin-current-price-section" class="mt-4 space-y-4">
+                    <div>
+                        <label for="mahr-coin-count-current" class="block text-md font-medium text-gray-300 mb-2">تعداد سکه</label>
+                        <input type="number" id="mahr-coin-count-current" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="مثال: 110">
+                    </div>
+                    <div>
+                        <label for="mahr-coin-price-current" class="block text-md font-medium text-gray-300 mb-2">قیمت روز یک عدد سکه (تومان)</label>
+                        <input type="text" id="mahr-coin-price-current" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="قیمت روز را وارد کنید" onkeyup="formatCurrency(this)">
+                        <p class="text-sm text-gray-400 mt-2">
+                            * برای محاسبه دقیق، قیمت لحظه‌ای را از 
+                            <a href="https://www.tgju.org/profile/retail_sekeb" target="_blank" class="text-blue-400 hover:underline font-semibold">سایت اتحادیه طلا و جواهر</a> 
+                            کپی کرده و در کادر بالا وارد کنید.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Mahr Type 2: Coin value at contract, indexed -->
+                <div id="mahr-coin-indexed-section" class="hidden mt-4 space-y-4">
+                    <div>
+                        <label for="mahr-coin-count-indexed" class="block text-md font-medium text-gray-300 mb-2">تعداد سکه</label>
+                        <input type="number" id="mahr-coin-count-indexed" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="مثال: 110">
+                    </div>
+                    <div>
+                        <label for="mahr-coin-price-contract" class="block text-md font-medium text-gray-300 mb-2">قیمت یک عدد سکه در سال عقد (تومان)</label>
+                        <input type="text" id="mahr-coin-price-contract" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="قیمت در سال عقد را وارد کنید" onkeyup="formatCurrency(this)">
+                    </div>
+                     <div>
+                        <label for="mahr-year-coin-indexed" class="block text-md font-medium text-gray-300 mb-2">سال وقوع عقد</label>
+                        <select id="mahr-year-coin-indexed" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white"></select>
+                    </div>
+                </div>
+
+                <!-- Mahr Type 3: Cash, indexed -->
+                <div id="mahr-cash-indexed-section" class="hidden mt-4 grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="mahr-value-contract" class="block text-md font-medium text-gray-300 mb-2">مبلغ مهریه در زمان عقد (تومان)</label>
+                        <input type="text" id="mahr-value-contract" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="مثال: 1000000" onkeyup="formatCurrency(this)">
+                    </div>
+                    <div>
+                        <label for="mahr-year-cash-indexed" class="block text-md font-medium text-gray-300 mb-2">سال وقوع عقد</label>
+                        <select id="mahr-year-cash-indexed" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white"></select>
+                    </div>
+                </div>
+
+                <div class="mt-6 flex justify-center">
+                    <button type="button" id="calculate-btn-mahr" class="w-full sm:w-auto text-white bg-green-500 hover:bg-green-600 font-semibold rounded-lg text-lg px-12 py-3">محاسبه مهریه به روز</button>
+                </div>
+                <div id="error-message-mahr" class="hidden bg-red-900/30 border-r-4 border-red-500 text-red-300 px-4 py-3 rounded-lg relative my-6" role="alert"></div>
+                <div id="result-section-mahr" class="hidden mt-8 text-center p-6 bg-green-900/20 border border-green-800 rounded-lg">
+                    <p class="text-lg text-gray-300" id="mahr-result-title"></p>
+                    <p class="text-3xl font-bold text-green-300 mt-2" id="mahr-result-value"></p>
+                    <p class="text-sm text-gray-400 mt-4" id="mahr-result-source"></p>
+                </div>
+                 <div class="mt-6 text-sm text-gray-400">
+                    <p><strong>نکات حقوقی:</strong></p>
+                    <ul class="list-disc list-inside mt-2 space-y-1">
+                        <li>**مهریه وجه نقد:** بر اساس فرمول بانک مرکزی (مبلغ مهریه × شاخص سال مطالبه ÷ شاخص سال عقد) محاسبه می‌شود.</li>
+                        <li>**مهریه سکه:** ارزش آن معادل قیمت روز سکه در زمان پرداخت است، مگر اینکه شرایط خاصی برای تبدیل آن به معادل ریالی در زمان عقد وجود داشته باشد.</li>
+                        <li>**شیربها:** یک هدیه و توافق عرفی بین خانواده‌هاست و ماهیت قانونی مهریه را ندارد.</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Ujrat Al-Mithl Tab -->
+            <div id="ujrat" class="tab-content hidden bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-700">
+                <h2 class="text-2xl font-bold text-gray-200 mb-2">محاسبه اجرت المثل ایام زوجیت</h2>
+                <p class="text-gray-400 mb-6">برآورد مبلغ اجرت‌المثل بر اساس سال‌های زندگی مشترک و حداقل دستمزد سالانه.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="ujrat-start-year" class="block text-md font-medium text-gray-300 mb-2">سال شروع زندگی مشترک</label>
+                        <select id="ujrat-start-year" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white"></select>
+                    </div>
+                    <div>
+                        <label for="ujrat-end-year" class="block text-md font-medium text-gray-300 mb-2">سال پایان زندگی مشترک</label>
+                        <select id="ujrat-end-year" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white"></select>
+                    </div>
+                </div>
+                <div class="mt-6 flex justify-center">
+                    <button type="button" id="calculate-btn-ujrat" class="w-full sm:w-auto text-white bg-yellow-500 hover:bg-yellow-600 font-semibold rounded-lg text-lg px-12 py-3">محاسبه کن</button>
+                </div>
+                <div id="error-message-ujrat" class="hidden bg-red-900/30 border-r-4 border-red-500 text-red-300 px-4 py-3 rounded-lg relative my-6" role="alert"></div>
+                <div id="result-section-ujrat" class="hidden mt-8 text-center p-6 bg-yellow-900/20 border border-yellow-800 rounded-lg">
+                    <p class="text-lg text-gray-300" id="ujrat-result-title"></p>
+                    <p class="text-3xl font-bold text-yellow-300 mt-2" id="ujrat-result-value"></p>
+                </div>
+                <div class="mt-6 text-sm text-gray-400">
+                    <p><strong>نکته مهم:</strong> این محاسبه بر مبنای **حداقل دستمزد** اعلامی هر سال است. مبلغ نهایی اجرت‌المثل توسط کارشناس دادگستری و بر اساس عواملی مانند شأن خانوادگی زوجه، تحصیلات، و کارهایی که در منزل انجام داده، تعیین می‌شود و می‌تواند با این برآورد متفاوت باشد.</p>
+                </div>
+            </div>
+
+            <!-- Litigation Costs Tab -->
+            <div id="costs" class="tab-content hidden bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-700">
+                 <h2 class="text-2xl font-bold text-gray-200 mb-2">محاسبه هزینه خدمات قضایی</h2>
+                <p class="text-gray-400 mb-6">تخمین هزینه خدمات مختلف قضایی بر اساس تعرفه‌های رسمی.</p>
+                <div>
+                    <label for="costs-type" class="block text-md font-medium text-gray-300 mb-2">نوع خدمت قضایی را انتخاب کنید:</label>
+                    <select id="costs-type" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white">
+                        <option value="financial_claim">دادرسی دعاوی مالی</option>
+                        <option value="bounced_check">شکایت کیفری چک بلامحل</option>
+                        <option value="non_financial_claim">دادرسی دعاوی غیرمالی</option>
+                        <option value="other_services">سایر خدمات و تعرفه‌ها</option>
+                    </select>
+                </div>
+                
+                <!-- Financial Claim Section -->
+                <div id="costs-financial-section" class="mt-4 space-y-4">
+                    <div>
+                        <label for="costs-financial-stage" class="block text-md font-medium text-gray-300 mb-2">مرحله رسیدگی</label>
+                        <select id="costs-financial-stage" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white">
+                            <option value="badavi">مرحله بدوی</option>
+                            <option value="tajdidnazar">مرحله تجدیدنظر</option>
+                            <option value="farjam">مرحله فرجام خواهی</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="costs-financial-value" class="block text-md font-medium text-gray-300 mb-2">بهای خواسته (ریال)</label>
+                        <input type="text" id="costs-financial-value" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="مثال: 500000000" onkeyup="formatCurrency(this)">
+                    </div>
+                </div>
+
+                <!-- Bounced Check Section -->
+                <div id="costs-check-section" class="hidden mt-4 space-y-4">
+                     <div>
+                        <label for="costs-check-value" class="block text-md font-medium text-gray-300 mb-2">مبلغ چک (ریال)</label>
+                        <input type="text" id="costs-check-value" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-left text-white" placeholder="مثال: 100000000" onkeyup="formatCurrency(this)">
+                    </div>
+                </div>
+
+                <!-- Other Services Section -->
+                <div id="costs-other-section" class="hidden mt-4 space-y-4">
+                    <label for="costs-other-service-type" class="block text-md font-medium text-gray-300 mb-2">نوع خدمت</label>
+                    <select id="costs-other-service-type" class="w-full p-3 bg-gray-700 border border-gray-600 rounded-lg text-lg text-white">
+                        <option value="200000">بهای اوراق دادخواست و اظهارنامه (هر برگ)</option>
+                        <option value="100000">هزینه تقدیم شکایت کیفری</option>
+                        <option value="300000">شکایت به دادسرای انتظامی قضات</option>
+                        <option value="300000">اعتراض به قرارهای قابل تجدیدنظر</option>
+                        <option value="300000">هزینه اجرای موقت احکام</option>
+                        <option value="500000">اعاده دادرسی کیفری در دیوان عالی</option>
+                        <option value="300000">تجدیدنظر از احکام کیفری</option>
+                        <option value="200000">تقدیم دادخواست به شعب بدوی دیوان عدالت اداری</option>
+                        <option value="400000">تقدیم دادخواست به شعب تجدیدنظر دیوان عدالت اداری</option>
+                        <option value="200000">گواهی عدم سوءپیشینه کیفری (نسخه اول)</option>
+                        <option value="150000">گواهی عدم سوءپیشینه کیفری (نسخه‌های بعدی)</option>
+                        <option value="150000">هزینه تطبیق اوراق با اصل (هر صفحه)</option>
+                        <option value="50000">هزینه صدور گواهی از دفاتر مراجع قضایی</option>
+                    </select>
+                </div>
+
+
+                 <div class="mt-6 flex justify-center">
+                    <button type="button" id="calculate-btn-costs" class="w-full sm:w-auto text-white bg-purple-500 hover:bg-purple-600 font-semibold rounded-lg text-lg px-12 py-3">محاسبه هزینه</button>
+                </div>
+                <div id="result-section-costs" class="hidden mt-8 text-center p-6 bg-purple-900/20 border border-purple-800 rounded-lg">
+                    <p class="text-lg text-gray-300" id="costs-result-title"></p>
+                    <p class="text-3xl font-bold text-purple-300 mt-2" id="costs-result-value"></p>
+                </div>
+            </div>
+
+            <!-- Nafaqeh Tab -->
+            <div id="nafaqeh" class="tab-content hidden bg-gray-800 p-6 sm:p-8 rounded-2xl shadow-lg border border-gray-700">
+                 <h2 class="text-2xl font-bold text-gray-200 mb-2">ابزار تخمین نفقه ماهیانه</h2>
+                <p class="text-gray-400 mb-6">این ابزار به شما کمک می‌کند هزینه‌های متعارف را برای ارائه به کارشناس دادگستری برآورد کنید.</p>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+                    <div>
+                        <label class="block text-md font-medium text-gray-300">هزینه مسکن (اجاره ماهانه)</label>
+                        <input type="text" id="nafaqeh-housing" class="nafaqeh-input w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                    </div>
+                    <div>
+                        <label class="block text-md font-medium text-gray-300">خوراک و اغذیه</label>
+                        <input type="text" id="nafaqeh-food" class="nafaqeh-input w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                    </div>
+                    <div>
+                        <label class="block text-md font-medium text-gray-300">پوشاک</label>
+                        <input type="text" id="nafaqeh-clothing" class="nafaqeh-input w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                    </div>
+                    <div>
+                        <label class="block text-md font-medium text-gray-300">هزینه‌های درمانی و بهداشتی</label>
+                        <input type="text" id="nafaqeh-health" class="nafaqeh-input w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                    </div>
+                    <div>
+                        <label class="block text-md font-medium text-gray-300">هزینه رفت و آمد</label>
+                        <input type="text" id="nafaqeh-transport" class="nafaqeh-input w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                    </div>
+                    <div>
+                        <label class="block text-md font-medium text-gray-300">سایر هزینه‌های متعارف</label>
+                        <input type="text" id="nafaqeh-other" class="nafaqeh-input w-full p-2 mt-1 bg-gray-700 border border-gray-600 rounded-lg text-left text-white" placeholder="0" onkeyup="formatCurrency(this)">
+                    </div>
+                </div>
+                 <div id="result-section-nafaqeh" class="mt-8 text-center p-6 bg-pink-900/20 border border-pink-800 rounded-lg">
+                    <p class="text-lg text-gray-300">مجموع هزینه‌های برآورد شده ماهیانه:</p>
+                    <p class="text-3xl font-bold text-pink-300 mt-2" id="nafaqeh-result-value">۰ تومان</p>
+                </div>
+                <div class="mt-6 text-sm text-gray-400">
+                    <p><strong>سلب مسئولیت مهم:</strong> نفقه شامل همه نیازهای متعارف و متناسب با وضعیت زن است. مبلغ نهایی نفقه توسط کارشناس رسمی دادگستری و با در نظر گرفتن شأن زوجه و وضعیت مالی زوج تعیین می‌گردد و این محاسبه صرفاً یک برآورد اولیه است.</p>
+                </div>
+            </div>
+        </main>
+        <footer class="text-center mt-10 text-sm text-gray-500">
+            <p>توسعه دهنده: علی کریم زاده</p>
+        </footer>
+    </div>
+
+    <script>
+        // --- GLOBAL UTILITIES ---
+        const getFloat = (id) => parseFloat(document.getElementById(id).value.replace(/,/g, '')) || 0;
+        const getInt = (id) => parseInt(document.getElementById(id).value, 10) || 0;
+        function formatCurrency(input) {
+            let value = input.value.replace(/,/g, '');
+            if (!isNaN(value) && value.length > 0) {
+                input.value = parseFloat(value).toLocaleString('en-US');
+            } else {
+                input.value = '';
+            }
+        }
+        function formatAmount(num) { return num.toLocaleString('fa-IR'); }
+        function createFraction(n, d) { return `<div class="fraction"><span class="numerator">${n}</span><span class="denominator">${d}</span></div>`; }
+
+        // --- TAB MANAGEMENT ---
+        function openTab(evt, tabName) {
+            document.querySelectorAll(".tab-content").forEach(tc => tc.classList.add("hidden"));
+            document.querySelectorAll(".tab-link").forEach(tl => tl.classList.remove("active"));
+            document.getElementById(tabName).classList.remove("hidden");
+            evt.currentTarget.classList.add("active");
+        }
+
+        // --- INHERITANCE CALCULATOR ---
+        (function() {
+            const getVal = (id) => document.getElementById(id).value;
+            const isChecked = (id) => document.getElementById(id).checked;
+            const errorDiv = document.getElementById('error-message-inheritance');
+            const resultDiv = document.getElementById('result-section-inheritance');
+
+            document.getElementById('calculate-btn-inheritance').addEventListener('click', calculateInheritance);
+            document.getElementById('reset-btn-inheritance').addEventListener('click', () => {
+                document.getElementById('form-section-inheritance').reset();
+                ['total-assets', 'will-amount', 'mahr-deduction', 'nafaqeh-deduction', 'burial-costs', 'other-debts'].forEach(id => document.getElementById(id).value = '');
+                resultDiv.classList.add('hidden');
+                errorDiv.classList.add('hidden');
+            });
+
+            function calculateInheritance() {
+                errorDiv.classList.add('hidden');
+                resultDiv.classList.add('hidden');
+
+                const totalAssets = getFloat('total-assets');
+                if (totalAssets <= 0) {
+                    errorDiv.innerHTML = 'لطفاً مبلغ کل ماترک را به درستی وارد کنید.';
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+                
+                const oneThirdAssets = totalAssets / 3;
+                let willAmount = getFloat('will-amount');
+                let notes = [];
+
+                if (willAmount > oneThirdAssets) {
+                    willAmount = oneThirdAssets;
+                    notes.push(`مبلغ وصیت‌نامه بیش از یک‌سوم اموال بود و به ${formatAmount(Math.round(oneThirdAssets))} تومان کاهش یافت.`);
+                }
+                
+                const totalDeductions = willAmount + getFloat('mahr-deduction') + getFloat('nafaqeh-deduction') + getFloat('burial-costs') + getFloat('other-debts');
+                const netAssets = totalAssets - totalDeductions;
+
+                if (netAssets < 0) {
+                    errorDiv.innerHTML = `ماترک برای پرداخت تمام دیون، هزینه‌ها و وصیت کافی نیست.<br>مبلغ کسری: ${formatAmount(Math.abs(netAssets))} تومان`;
+                    errorDiv.classList.remove('hidden');
+                    return;
+                }
+
+                const deceasedGender = getVal('deceased-gender');
+                const wifeCount = getInt('wife-count');
+                const fatherAlive = isChecked('father-alive');
+                const motherAlive = isChecked('mother-alive');
+                const sonCount = getInt('son-count');
+                const daughterCount = getInt('daughter-count');
+                const hasChildren = sonCount > 0 || daughterCount > 0;
+                
+                let remainingAssets = netAssets;
+                let results = [];
+                notes.push('دیون، هزینه‌ها و وصیت (تا سقف ۱/۳) قبل از تقسیم ارث از کل ماترک کسر شده است.');
+
+                let spouseShareAmount = 0;
+                if (deceasedGender === 'male' && wifeCount > 0) {
+                    const frac = hasChildren ? {n:1,d:8} : {n:1,d:4};
+                    spouseShareAmount = netAssets * (frac.n / frac.d);
+                    const shareText = wifeCount > 1 ? `مشترکاً ${createFraction(frac.n, frac.d)}` : createFraction(frac.n, frac.d);
+                    results.push({ heir: `همسر (${wifeCount} نفر)`, fraction: shareText, amount: spouseShareAmount });
+                    if (wifeCount > 1) notes.push(`سهم بین ${wifeCount} همسر به تساوی تقسیم می‌شود.`);
+                } else if (deceasedGender === 'female') {
+                    const frac = hasChildren ? {n:1,d:4} : {n:1,d:2};
+                    spouseShareAmount = netAssets * (frac.n / frac.d);
+                    results.push({ heir: 'شوهر', fraction: createFraction(frac.n, frac.d), amount: spouseShareAmount });
+                }
+                remainingAssets -= spouseShareAmount;
+
+                if (hasChildren) {
+                    if (fatherAlive) {
+                        const amount = netAssets / 6;
+                        results.push({ heir: 'پدر', fraction: createFraction(1, 6), amount });
+                        remainingAssets -= amount;
+                    }
+                    if (motherAlive) {
+                        const amount = netAssets / 6;
+                        results.push({ heir: 'مادر', fraction: createFraction(1, 6), amount });
+                        remainingAssets -= amount;
+                    }
+                } else {
+                    if (motherAlive) {
+                        let amount = netAssets / 3;
+                        if (fatherAlive && deceasedGender === 'female' && (amount + spouseShareAmount) > netAssets) {
+                            amount = netAssets / 6;
+                            notes.push('سهم مادر به دلیل قاعده حاجب نقصانی به ۱/۶ کاهش یافت.');
+                        }
+                        results.push({ heir: 'مادر', fraction: createFraction(1, 3), amount });
+                        remainingAssets -= amount;
+                    }
+                    if (fatherAlive) {
+                        results.push({ heir: 'پدر', fraction: 'الباقی', amount: remainingAssets });
+                        remainingAssets = 0;
+                    }
+                }
+
+                if (hasChildren) {
+                    const totalChildShares = (sonCount * 2) + daughterCount;
+                    if (totalChildShares > 0 && remainingAssets > 0) {
+                        const singleShareValue = remainingAssets / totalChildShares;
+                        if (sonCount > 0) {
+                            results.push({ heir: `پسر (${sonCount} نفر)`, fraction: 'الباقی', amount: singleShareValue * 2 * sonCount });
+                            notes.push(`هر پسر: ${formatAmount(Math.round(singleShareValue * 2))} تومان`);
+                        }
+                        if (daughterCount > 0) {
+                            results.push({ heir: `دختر (${daughterCount} نفر)`, fraction: 'الباقی', amount: singleShareValue * daughterCount });
+                            notes.push(`هر دختر: ${formatAmount(Math.round(singleShareValue))} تومان`);
+                        }
+                    }
+                } else if (!fatherAlive && !motherAlive && remainingAssets > 0.01) {
+                    const spouseResult = results.find(r => r.heir.includes('همسر') || r.heir.includes('شوهر'));
+                    if (spouseResult) {
+                        spouseResult.amount += remainingAssets;
+                        spouseResult.fraction += ' + الباقی (رد)';
+                        notes.push('باقیمانده ماترک به دلیل نبودن وراث دیگر، به همسر/شوهر رد می‌شود.');
+                    }
+                }
+
+                displayInheritanceResults(results, notes, { totalAssets, totalDeductions, netAssets });
+            }
+
+            function displayInheritanceResults(results, notes, summary) {
+                let finalTotalDistributed = 0;
+                let resultBodyHTML = '';
+                results.forEach(res => { finalTotalDistributed += res.amount; resultBodyHTML += `<tr><td class="font-medium text-gray-200">${res.heir}</td><td class="font-mono text-lg">${res.fraction}</td><td class="font-mono text-lg text-green-400 font-semibold">${formatAmount(Math.round(res.amount))}</td></tr>`; });
+                let notesHTML = '';
+                if (notes.length > 0) { notes.forEach(note => { notesHTML += `<li>${note}</li>`; }); }
+                resultDiv.innerHTML = `<div class="mb-8 p-6 bg-indigo-900/20 border border-indigo-800 rounded-lg"><h3 class="text-xl font-bold text-center mb-4 text-indigo-200">خلاصه محاسبات ماترک</h3><table class="w-full summary-table"><tbody><tr><td class="font-medium text-gray-300">کل ماترک (ناخالص):</td><td class="font-mono text-left text-gray-100">${formatAmount(summary.totalAssets)} تومان</td></tr><tr><td class="font-medium text-gray-300">کسر دیون و وصیت:</td><td class="font-mono text-left text-red-400">( ${formatAmount(summary.totalDeductions)} ) تومان</td></tr><tr class="border-t-2 border-indigo-700"><td class="font-bold text-indigo-100 pt-4">ماترک خالص (قابل تقسیم):</td><td class="font-mono text-left font-bold text-green-400 pt-4">${formatAmount(Math.round(summary.netAssets))} تومان</td></tr></tbody></table></div><h2 class="text-2xl font-bold text-center mb-6 text-gray-200">نتیجه تقسیم ارث</h2><div class="overflow-x-auto"><table class="min-w-full bg-gray-800/50 border border-gray-700 rounded-lg shadow-sm result-table"><thead class="bg-gray-700/50"><tr><th class="font-semibold text-gray-300">وارث</th><th class="font-semibold text-gray-300">سهم (کسری)</th><th class="font-semibold text-gray-300">مبلغ سهم (تومان)</th></tr></thead><tbody class="divide-y divide-gray-700">${resultBodyHTML}</tbody><tfoot class="bg-gray-700/50 font-bold"><tr class="border-t border-gray-600"><td colspan="2" class="text-right pr-6">جمع کل</td><td class="text-blue-400">${formatAmount(Math.round(finalTotalDistributed))} تومان</td></tr></tfoot></table></div><div class="mt-6 p-4 bg-yellow-900/20 border-r-4 border-yellow-600 text-yellow-200 rounded-lg"><h4 class="font-bold">توضیحات:</h4><ul class="list-disc list-inside mt-2">${notesHTML}</ul></div>`;
+                resultDiv.classList.remove('hidden');
+                resultDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+        })();
+
+        // --- MAHR CALCULATOR ---
+        (function() {
+            const cbiIndex = {
+                1352: 0.17, 1353: 0.20, 1354: 0.22, 1355: 0.25, 1356: 0.32, 1357: 0.35, 1358: 0.39, 1359: 0.48, 1360: 0.60, 1361: 0.73, 1362: 0.86, 1363: 0.95, 1364: 1.02, 1365: 1.26, 1366: 1.62, 1367: 2.08, 1368: 2.44, 1369: 2.66, 1370: 3.20, 1371: 4.00, 1372: 4.90, 1373: 6.63, 1374: 9.88, 1375: 12.18, 1376: 14.28, 1377: 16.89, 1378: 20.30, 1379: 25.40, 1380: 28.26, 1381: 32.70, 1382: 37.75, 1383: 43.49, 1384: 47.92, 1385: 54.48, 1386: 64.63, 1387: 80.94, 1388: 89.65, 1389: 100.00, 1390: 121.50, 1391: 158.90, 1392: 213.50, 1393: 246.50, 1394: 275.80, 1395: 300.50, 1396: 329.60, 1397: 432.80, 1398: 581.40, 1399: 792.20, 1400: 1113.8, 1401: 1642.5, 1402: 2315.8, 1403: 3242.1, 1404: 4538.9
+            };
+            const yearSelects = [document.getElementById('mahr-year-coin-indexed'), document.getElementById('mahr-year-cash-indexed')];
+            const currentPersianYear = 1405; 
+            const yearOfPayment = currentPersianYear - 1;
+
+            yearSelects.forEach(select => {
+                Object.keys(cbiIndex).sort((a,b) => b-a).forEach(year => {
+                    let option = new Option(`سال ${year}`, year);
+                    select.add(option.cloneNode(true));
+                });
+            });
+
+            const mahrTypeSelect = document.getElementById('mahr-type');
+            const sections = {
+                coin_current_price: document.getElementById('mahr-coin-current-price-section'),
+                coin_indexed: document.getElementById('mahr-coin-indexed-section'),
+                cash_indexed: document.getElementById('mahr-cash-indexed-section')
+            };
+            
+            mahrTypeSelect.addEventListener('change', (e) => {
+                Object.values(sections).forEach(s => s.classList.add('hidden'));
+                sections[e.target.value].classList.remove('hidden');
+            });
+
+            document.getElementById('calculate-btn-mahr').addEventListener('click', () => {
+                const errorDiv = document.getElementById('error-message-mahr');
+                const resultDiv = document.getElementById('result-section-mahr');
+                errorDiv.classList.add('hidden');
+                resultDiv.classList.add('hidden');
+
+                const mahrType = mahrTypeSelect.value;
+                let resultValue = 0;
+                let resultTitle = '';
+                let resultSource = '';
+
+                if (mahrType === 'coin_current_price') {
+                    const coinCount = getInt('mahr-coin-count-current');
+                    const coinPrice = getFloat('mahr-coin-price-current');
+                    if (coinCount <= 0 || coinPrice <= 0) {
+                        errorDiv.innerHTML = 'لطفاً تعداد و قیمت روز سکه را به درستی وارد کنید.';
+                        errorDiv.classList.remove('hidden'); return;
+                    }
+                    resultValue = coinCount * coinPrice;
+                    resultTitle = `ارزش روز ${formatAmount(coinCount)} عدد سکه تمام بهار آزادی:`;
+                    resultSource = `(بر اساس قیمت هر سکه: ${formatAmount(coinPrice)} تومان که توسط شما وارد شده است).`;
+
+                } else if (mahrType === 'coin_indexed') {
+                    const coinCount = getInt('mahr-coin-count-indexed');
+                    const coinPriceContract = getFloat('mahr-coin-price-contract');
+                    const contractYear = getInt('mahr-year-coin-indexed');
+                     if (coinCount <= 0 || coinPriceContract <= 0) {
+                        errorDiv.innerHTML = 'لطفاً تعداد و قیمت سکه در سال عقد را به درستی وارد کنید.';
+                        errorDiv.classList.remove('hidden'); return;
+                    }
+                    const mahrValueAtContract = coinCount * coinPriceContract;
+                    const indexContract = cbiIndex[contractYear];
+                    const indexPayment = cbiIndex[yearOfPayment];
+
+                    if (!indexContract || !indexPayment) {
+                        errorDiv.innerHTML = `اطلاعات شاخص برای سال عقد (${contractYear}) یا سال قبل از مطالبه (${yearOfPayment}) موجود نیست.`;
+                        errorDiv.classList.remove('hidden'); return;
+                    }
+                    resultValue = (mahrValueAtContract * indexPayment) / indexContract;
+                    resultTitle = `ارزش به‌روز شده معادل ریالی ${formatAmount(coinCount)} سکه از سال ${contractYear}:`;
+                    resultSource = `ارزش سکه‌ها در سال عقد: ${formatAmount(mahrValueAtContract)} تومان. محاسبه بر اساس شاخص سال عقد (${contractYear}) و سال قبل از مطالبه (${yearOfPayment}).`;
+
+                } else if (mahrType === 'cash_indexed') {
+                    const mahrValue = getFloat('mahr-value-contract');
+                    const contractYear = getInt('mahr-year-cash-indexed');
+                    if (mahrValue <= 0) {
+                        errorDiv.innerHTML = 'لطفاً مبلغ مهریه را به درستی وارد کنید.';
+                        errorDiv.classList.remove('hidden'); return;
+                    }
+                    const indexContract = cbiIndex[contractYear];
+                    const indexPayment = cbiIndex[yearOfPayment];
+
+                    if (!indexContract || !indexPayment) {
+                        errorDiv.innerHTML = `اطلاعات شاخص برای سال عقد (${contractYear}) یا سال قبل از مطالبه (${yearOfPayment}) موجود نیست.`;
+                        errorDiv.classList.remove('hidden'); return;
+                    }
+                    
+                    resultValue = (mahrValue * indexPayment) / indexContract;
+                    resultTitle = `مبلغ مهریه به نرخ روز (سال ${currentPersianYear}):`;
+                    resultSource = `محاسبه بر اساس فرمول بانک مرکزی با شاخص سال عقد (${contractYear}) و سال قبل از مطالبه (${yearOfPayment}).`;
+                }
+                
+                document.getElementById('mahr-result-title').innerHTML = resultTitle;
+                document.getElementById('mahr-result-value').innerHTML = formatAmount(Math.round(resultValue)) + ' تومان';
+                document.getElementById('mahr-result-source').innerHTML = resultSource;
+                resultDiv.classList.remove('hidden');
+            });
+        })();
+        
+        // --- UJRAT AL-MITHL CALCULATOR ---
+        (function() {
+            const startYearSelect = document.getElementById('ujrat-start-year');
+            const endYearSelect = document.getElementById('ujrat-end-year');
+            // Data source: Simplified based on public data, for estimation only.
+            const minWages = { 1370: 30000, 1371: 42000, 1372: 58800, 1373: 82320, 1374: 115248, 1375: 150000, 1376: 180000, 1377: 216000, 1378: 259200, 1379: 311040, 1380: 388800, 1381: 486000, 1382: 607500, 1383: 790000, 1384: 1225500, 1385: 1500000, 1386: 1830000, 1387: 2196000, 1388: 2635200, 1389: 3030000, 1390: 3303000, 1391: 3897000, 1392: 4871250, 1393: 6089100, 1394: 7124250, 1395: 8121650, 1396: 9299310, 1397: 11112690, 1398: 15168820, 1399: 19104270, 1400: 26554950, 1401: 41797500, 1402: 53082840, 1403: 71661840 };
+            
+            for (const year in minWages) {
+                startYearSelect.add(new Option(`سال ${year}`, year));
+                endYearSelect.add(new Option(`سال ${year}`, year));
+            }
+            
+            document.getElementById('calculate-btn-ujrat').addEventListener('click', () => {
+                const startYear = getInt('ujrat-start-year');
+                const endYear = getInt('ujrat-end-year');
+                const errorDiv = document.getElementById('error-message-ujrat');
+                const resultDiv = document.getElementById('result-section-ujrat');
+                errorDiv.classList.add('hidden');
+                resultDiv.classList.add('hidden');
+
+                if (startYear >= endYear) {
+                    errorDiv.innerHTML = 'سال پایان باید بعد از سال شروع باشد.';
+                    errorDiv.classList.remove('hidden'); return;
+                }
+
+                let totalUjrat = 0;
+                for (let year = startYear; year < endYear; year++) {
+                    if (minWages[year]) {
+                        totalUjrat += minWages[year];
+                    }
+                }
+
+                document.getElementById('ujrat-result-title').textContent = `برآورد اجرت المثل برای ${endYear - startYear} سال (از ${startYear} تا ${endYear}):`;
+                document.getElementById('ujrat-result-value').textContent = formatAmount(Math.round(totalUjrat)) + ' تومان';
+                resultDiv.classList.remove('hidden');
+            });
+        })();
+
+        // --- LITIGATION COSTS CALCULATOR ---
+        (function() {
+            const costsTypeSelect = document.getElementById('costs-type');
+            const sections = {
+                financial_claim: document.getElementById('costs-financial-section'),
+                bounced_check: document.getElementById('costs-check-section'),
+                other_services: document.getElementById('costs-other-section')
+            };
+
+            costsTypeSelect.addEventListener('change', (e) => {
+                Object.values(sections).forEach(s => s.classList.add('hidden'));
+                if (sections[e.target.value]) {
+                    sections[e.target.value].classList.remove('hidden');
+                }
+            });
+
+            document.getElementById('calculate-btn-costs').addEventListener('click', () => {
+                const type = costsTypeSelect.value;
+                const resultDiv = document.getElementById('result-section-costs');
+                const resultTitleEl = document.getElementById('costs-result-title');
+                const resultValueEl = document.getElementById('costs-result-value');
+                let cost = 0;
+                let title = 'هزینه:';
+
+                if (type === 'financial_claim') {
+                    const stage = document.getElementById('costs-financial-stage').value;
+                    const value = getFloat('costs-financial-value');
+                    title = `هزینه دادرسی دعوای مالی در مرحله ${document.querySelector('#costs-financial-stage option:checked').textContent}:`;
+                    let rate1, rate2, threshold;
+                    
+                    if (stage === 'badavi') {
+                        rate1 = 0.025; rate2 = 0.035;
+                    } else if (stage === 'tajdidnazar') {
+                        rate1 = 0.045; rate2 = 0.045;
+                    } else { // farjam
+                        rate1 = 0.055; rate2 = 0.055;
+                    }
+                    threshold = 200000000; // 20M Toman in Rials
+                    
+                    if (value <= threshold) {
+                        cost = value * rate1;
+                    } else {
+                        cost = (threshold * rate1) + ((value - threshold) * rate2);
+                    }
+
+                } else if (type === 'bounced_check') {
+                    title = 'هزینه شکایت کیفری چک بلامحل:';
+                    const value = getFloat('costs-check-value');
+                    if (value <= 1000000) {
+                        cost = 60000;
+                    } else if (value <= 10000000) {
+                        cost = 300000;
+                    } else if (value <= 100000000) {
+                        cost = 400000;
+                    } else {
+                        cost = value * 0.001; // one in a thousand
+                    }
+                } else if (type === 'non_financial_claim') {
+                    title = 'هزینه دادرسی دعاوی غیرمالی:';
+                    cost = 1800000; // Max value from the range 400k-1.8M
+                } else if (type === 'other_services') {
+                    const serviceSelect = document.getElementById('costs-other-service-type');
+                    cost = parseFloat(serviceSelect.value);
+                    title = `هزینه ${serviceSelect.options[serviceSelect.selectedIndex].text}:`;
+                }
+                
+                resultTitleEl.textContent = title;
+                resultValueEl.textContent = formatAmount(Math.round(cost)) + ' ریال';
+                resultDiv.classList.remove('hidden');
+            });
+             // Trigger change on load to show the correct initial section
+            costsTypeSelect.dispatchEvent(new Event('change'));
+        })();
+
+        // --- NAFAQEH CALCULATOR ---
+        (function() {
+            const inputs = document.querySelectorAll('.nafaqeh-input');
+            const resultValueEl = document.getElementById('nafaqeh-result-value');
+
+            function calculateNafaqeh() {
+                let total = 0;
+                inputs.forEach(input => {
+                    total += parseFloat(input.value.replace(/,/g, '')) || 0;
+                });
+                resultValueEl.textContent = formatAmount(total) + ' تومان';
+            }
+            inputs.forEach(input => input.addEventListener('keyup', calculateNafaqeh));
+        })();
+
+        // Set default tab to home
+        document.addEventListener('DOMContentLoaded', () => {
+            openTab({currentTarget: document.querySelector('.tab-link')}, 'home');
+        });
+    </script>
+</body>
+</html>
