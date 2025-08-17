@@ -28,10 +28,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.add('hidden');
                 el.innerHTML = '';
             },
-            showResult: (el, content) => {
-                el.innerHTML = content;
+            showResult: (el) => {
                 el.classList.remove('hidden');
-                // Use a short timeout to allow the element to be visible before adding the animation class
                 setTimeout(() => {
                     el.classList.add('visible');
                     el.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -41,8 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 el.classList.remove('visible');
                 setTimeout(() => {
                     el.classList.add('hidden');
-                    el.innerHTML = '';
-                }, 500); // Match animation duration
+                }, 500);
             }
         },
 
@@ -55,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     this.openTab(e.currentTarget, tabName);
                 });
             });
-            // Set default tab
             this.openTab(tabLinks[0], 'home');
         },
 
@@ -79,33 +75,56 @@ document.addEventListener('DOMContentLoaded', () => {
             this.costs.init(this.utils);
             this.nafaqeh.init(this.utils);
 
-            // Add global formatters
             document.querySelectorAll('input[type="text"], input[type="number"]').forEach(input => {
-                if(input.id.includes('count') || input.id.includes('year')) return; // Don't format counts/years
+                if(input.id.includes('count') || input.id.includes('year')) return;
                 input.addEventListener('keyup', () => this.utils.formatCurrency(input));
             });
         },
 
         // --- INHERITANCE MODULE ---
         inheritance: {
+            chart: null,
             init: function(utils) {
                 this.utils = utils;
                 this.errorDiv = document.getElementById('error-message-inheritance');
                 this.resultDiv = document.getElementById('result-section-inheritance');
+                this.tableContainer = document.getElementById('inheritance-table-container');
 
                 document.getElementById('calculate-btn-inheritance').addEventListener('click', () => this.calculate());
                 document.getElementById('reset-btn-inheritance').addEventListener('click', () => this.reset());
+
+                // Heir class visibility logic
+                const heirClassSelect = document.getElementById('heir-class');
+                heirClassSelect.addEventListener('change', (e) => {
+                    document.querySelectorAll('.heir-class-section').forEach(s => s.classList.add('hidden'));
+                    document.getElementById(`heirs-class-${e.target.value}`).classList.remove('hidden');
+                });
+
+                // Wife count visibility
+                const genderSelect = document.getElementById('deceased-gender');
+                genderSelect.addEventListener('change', (e) => {
+                    document.getElementById('wife-count-container').style.display = e.target.value === 'male' ? 'block' : 'none';
+                });
             },
             reset: function() {
                 document.getElementById('form-section-inheritance').reset();
-                ['total-assets', 'will-amount', 'mahr-deduction', 'nafaqeh-deduction', 'burial-costs', 'other-debts'].forEach(id => document.getElementById(id).value = '');
+                 document.getElementById('wife-count-container').style.display = 'block';
+                document.querySelectorAll('.heir-class-section').forEach((s, i) => {
+                    s.classList.toggle('hidden', i !== 0);
+                });
                 this.utils.hideResult(this.resultDiv);
                 this.utils.hideError(this.errorDiv);
+                if (this.chart) {
+                    this.chart.destroy();
+                    this.chart = null;
+                }
             },
             calculate: function() {
                 this.utils.hideError(this.errorDiv);
                 this.utils.hideResult(this.resultDiv);
+                if (this.chart) this.chart.destroy();
 
+                // --- 1. GET COMMON VALUES ---
                 const totalAssets = this.utils.getFloat('total-assets');
                 if (totalAssets <= 0) {
                     this.utils.showError(this.errorDiv, 'لطفاً مبلغ کل ماترک را به درستی وارد کنید.');
@@ -122,90 +141,159 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 const totalDeductions = willAmount + this.utils.getFloat('mahr-deduction') + this.utils.getFloat('nafaqeh-deduction') + this.utils.getFloat('burial-costs') + this.utils.getFloat('other-debts');
-                const netAssets = totalAssets - totalDeductions;
+                let netAssets = totalAssets - totalDeductions;
 
                 if (netAssets < 0) {
                     this.utils.showError(this.errorDiv, `ماترک برای پرداخت تمام دیون، هزینه‌ها و وصیت کافی نیست.<br>مبلغ کسری: ${this.utils.formatAmount(Math.abs(netAssets))} تومان`);
                     return;
                 }
+                notes.push('دیون، هزینه‌ها و وصیت (تا سقف ۱/۳) قبل از تقسیم ارث از کل ماترک کسر شده است.');
 
                 const deceasedGender = this.utils.getVal('deceased-gender');
-                const wifeCount = this.utils.getInt('wife-count');
+                const heirClass = this.utils.getVal('heir-class');
+                let results = [];
+
+                // --- 2. SPOUSE SHARE ---
+                const sonCount = this.utils.getInt('son-count');
+                const daughterCount = this.utils.getInt('daughter-count');
+                const hasChildren = heirClass === '1' && (sonCount > 0 || daughterCount > 0);
+                let spouseShareAmount = 0;
+
+                if (deceasedGender === 'male') {
+                    const wifeCount = this.utils.getInt('wife-count');
+                    if (wifeCount > 0) {
+                        const frac = hasChildren ? {n:1,d:8} : {n:1,d:4};
+                        spouseShareAmount = netAssets * (frac.n / frac.d);
+                        const shareText = wifeCount > 1 ? `مشترکاً ${this.utils.createFraction(frac.n, frac.d)}` : this.utils.createFraction(frac.n, frac.d);
+                        results.push({ heir: `همسر (${wifeCount} نفر)`, fraction: shareText, amount: spouseShareAmount });
+                        if (wifeCount > 1) notes.push(`سهم بین ${wifeCount} همسر به تساوی تقسیم می‌شود.`);
+                    }
+                } else { // Deceased is female, has one husband
+                    const frac = hasChildren ? {n:1,d:4} : {n:1,d:2};
+                    spouseShareAmount = netAssets * (frac.n / frac.d);
+                    results.push({ heir: 'شوهر', fraction: this.utils.createFraction(frac.n, frac.d), amount: spouseShareAmount });
+                }
+                netAssets -= spouseShareAmount;
+
+                // --- 3. CALCULATE BASED ON HEIR CLASS ---
+                if (heirClass === '1') this.calculateClass1(netAssets, results, notes);
+                else if (heirClass === '2') this.calculateClass2(netAssets, results, notes);
+                else if (heirClass === '3') this.calculateClass3(netAssets, results, notes);
+
+                this.displayResults(results, notes, { totalAssets, totalDeductions, netAssets: totalAssets - totalDeductions });
+            },
+
+            calculateClass1: function(assets, results, notes) {
                 const fatherAlive = this.utils.isChecked('father-alive');
                 const motherAlive = this.utils.isChecked('mother-alive');
                 const sonCount = this.utils.getInt('son-count');
                 const daughterCount = this.utils.getInt('daughter-count');
                 const hasChildren = sonCount > 0 || daughterCount > 0;
 
-                let remainingAssets = netAssets;
-                let results = [];
-                notes.push('دیون، هزینه‌ها و وصیت (تا سقف ۱/۳) قبل از تقسیم ارث از کل ماترک کسر شده است.');
-
-                let spouseShareAmount = 0;
-                if (deceasedGender === 'male' && wifeCount > 0) {
-                    const frac = hasChildren ? {n:1,d:8} : {n:1,d:4};
-                    spouseShareAmount = netAssets * (frac.n / frac.d);
-                    const shareText = wifeCount > 1 ? `مشترکاً ${this.utils.createFraction(frac.n, frac.d)}` : this.utils.createFraction(frac.n, frac.d);
-                    results.push({ heir: `همسر (${wifeCount} نفر)`, fraction: shareText, amount: spouseShareAmount });
-                    if (wifeCount > 1) notes.push(`سهم بین ${wifeCount} همسر به تساوی تقسیم می‌شود.`);
-                } else if (deceasedGender === 'female') {
-                    const frac = hasChildren ? {n:1,d:4} : {n:1,d:2};
-                    spouseShareAmount = netAssets * (frac.n / frac.d);
-                    results.push({ heir: 'شوهر', fraction: this.utils.createFraction(frac.n, frac.d), amount: spouseShareAmount });
-                }
-                remainingAssets -= spouseShareAmount;
-
+                let remaining = assets;
                 if (hasChildren) {
-                    if (fatherAlive) {
-                        const amount = netAssets / 6;
-                        results.push({ heir: 'پدر', fraction: this.utils.createFraction(1, 6), amount });
-                        remainingAssets -= amount;
-                    }
-                    if (motherAlive) {
-                        const amount = netAssets / 6;
-                        results.push({ heir: 'مادر', fraction: this.utils.createFraction(1, 6), amount });
-                        remainingAssets -= amount;
-                    }
+                    if (fatherAlive) { const amount = assets / 6; results.push({ heir: 'پدر', fraction: this.utils.createFraction(1, 6), amount }); remaining -= amount; }
+                    if (motherAlive) { const amount = assets / 6; results.push({ heir: 'مادر', fraction: this.utils.createFraction(1, 6), amount }); remaining -= amount; }
                 } else {
-                    if (motherAlive) {
-                        let amount = netAssets / 3;
-                        if (fatherAlive && deceasedGender === 'female' && (amount + spouseShareAmount) > netAssets) {
-                            amount = netAssets / 6;
-                            notes.push('سهم مادر به دلیل قاعده حاجب نقصانی به ۱/۶ کاهش یافت.');
-                        }
-                        results.push({ heir: 'مادر', fraction: this.utils.createFraction(1, 3), amount });
-                        remainingAssets -= amount;
-                    }
-                    if (fatherAlive) {
-                        results.push({ heir: 'پدر', fraction: 'الباقی', amount: remainingAssets });
-                        remainingAssets = 0;
-                    }
+                    if (motherAlive) { const amount = assets / 3; results.push({ heir: 'مادر', fraction: this.utils.createFraction(1, 3), amount }); remaining -= amount; }
+                    if (fatherAlive) { results.push({ heir: 'پدر', fraction: 'الباقی', amount: remaining }); remaining = 0; }
                 }
 
                 if (hasChildren) {
                     const totalChildShares = (sonCount * 2) + daughterCount;
-                    if (totalChildShares > 0 && remainingAssets > 0.01) {
-                        const singleShareValue = remainingAssets / totalChildShares;
-                        if (sonCount > 0) {
-                            results.push({ heir: `پسر (${sonCount} نفر)`, fraction: 'الباقی', amount: singleShareValue * 2 * sonCount });
-                            notes.push(`هر پسر: ${this.utils.formatAmount(Math.round(singleShareValue * 2))} تومان`);
-                        }
-                        if (daughterCount > 0) {
-                            results.push({ heir: `دختر (${daughterCount} نفر)`, fraction: 'الباقی', amount: singleShareValue * daughterCount });
-                            notes.push(`هر دختر: ${this.utils.formatAmount(Math.round(singleShareValue))} تومان`);
-                        }
-                    }
-                } else if (!fatherAlive && !motherAlive && remainingAssets > 0.01) {
-                    const spouseResult = results.find(r => r.heir.includes('همسر') || r.heir.includes('شوهر'));
-                    if (spouseResult) {
-                        spouseResult.amount += remainingAssets;
-                        spouseResult.fraction += ' + الباقی (رد)';
-                        notes.push('باقیمانده ماترک به دلیل نبودن وراث دیگر، به همسر/شوهر رد می‌شود.');
+                    if (totalChildShares > 0 && remaining > 0.01) {
+                        const singleShareValue = remaining / totalChildShares;
+                        if (sonCount > 0) results.push({ heir: `پسر (${sonCount} نفر)`, fraction: 'الباقی', amount: singleShareValue * 2 * sonCount });
+                        if (daughterCount > 0) results.push({ heir: `دختر (${daughterCount} نفر)`, fraction: 'الباقی', amount: singleShareValue * daughterCount });
                     }
                 }
-                this.displayResults(results, notes, { totalAssets, totalDeductions, netAssets });
             },
+
+            calculateClass2: function(assets, results, notes) {
+                 notes.push("محاسبات طبقه دوم بر اساس قوانین اصلی است و شامل حالت‌های خاص و پیچیده (مانند اجتماع اجداد و کلاله) نمی‌شود.");
+                 // Simplified logic
+                 const pgf = this.utils.isChecked('paternal-grandfather-alive');
+                 const pgm = this.utils.isChecked('paternal-grandmother-alive');
+                 const mgf = this.utils.isChecked('maternal-grandfather-alive');
+                 const mgm = this.utils.isChecked('maternal-grandmother-alive');
+                 const fullBro = this.utils.getInt('full-brother-count');
+                 const fullSis = this.utils.getInt('full-sister-count');
+                 const matSib = this.utils.getInt('maternal-sibling-count');
+
+                 let remaining = assets;
+                 // Maternal siblings (Kalalah Ummi)
+                 if (matSib > 0) {
+                     const frac = matSib === 1 ? 1/6 : 1/3;
+                     const amount = assets * frac;
+                     results.push({ heir: `خواهر و برادر مادری (${matSib} نفر)`, fraction: this.utils.createFraction(matSib === 1 ? 1:1, matSib === 1 ? 6:3), amount });
+                     remaining -= amount;
+                 }
+
+                 // Grandparents take priority over siblings in this simplified model
+                 const paternalGrandparents = (pgf ? 1:0) + (pgm ? 1:0);
+                 const maternalGrandparents = (mgf ? 1:0) + (mgm ? 1:0);
+
+                 if (paternalGrandparents + maternalGrandparents > 0) {
+                     const paternalSideShare = remaining * 2/3;
+                     const maternalSideShare = remaining * 1/3;
+                     if (pgf && pgm) {
+                         results.push({ heir: 'جد پدری', fraction: '', amount: paternalSideShare * 2/3 });
+                         results.push({ heir: 'جده پدری', fraction: '', amount: paternalSideShare * 1/3 });
+                     } else if (pgf) results.push({ heir: 'جد پدری', fraction: '', amount: paternalSideShare });
+                     else if (pgm) results.push({ heir: 'جده پدری', fraction: '', amount: paternalSideShare });
+
+                     if (mgf && mgm) {
+                         results.push({ heir: 'جد مادری', fraction: '', amount: maternalSideShare / 2 });
+                         results.push({ heir: 'جده مادری', fraction: '', amount: maternalSideShare / 2 });
+                     } else if (mgf) results.push({ heir: 'جد مادری', fraction: '', amount: maternalSideShare });
+                     else if (mgm) results.push({ heir: 'جده مادری', fraction: '', amount: maternalSideShare });
+
+                 } else if (fullBro + fullSis > 0) { // Full siblings
+                    const totalShares = (fullBro * 2) + fullSis;
+                    const singleShare = remaining / totalShares;
+                    if (fullBro > 0) results.push({ heir: `برادر ابوینی (${fullBro} نفر)`, fraction: 'الباقی', amount: singleShare * 2 * fullBro });
+                    if (fullSis > 0) results.push({ heir: `خواهر ابوینی (${fullSis} نفر)`, fraction: 'الباقی', amount: singleShare * fullSis });
+                 }
+            },
+
+            calculateClass3: function(assets, results, notes) {
+                 const paternalUncles = this.utils.getInt('paternal-uncle-count');
+                 const paternalAunts = this.utils.getInt('paternal-aunt-count');
+                 const maternalUncles = this.utils.getInt('maternal-uncle-count');
+                 const maternalAunts = this.utils.getInt('maternal-aunt-count');
+
+                 const paternalSideHeirs = paternalUncles + paternalAunts;
+                 const maternalSideHeirs = maternalUncles + maternalAunts;
+
+                 if (paternalSideHeirs === 0 && maternalSideHeirs === 0) return;
+
+                 const paternalSideShare = assets * 2/3;
+                 const maternalSideShare = assets * 1/3;
+
+                 if (paternalSideHeirs > 0) {
+                     const totalShares = (paternalUncles * 2) + paternalAunts;
+                     const singleShare = paternalSideShare / totalShares;
+                     if(paternalUncles > 0) results.push({ heir: `عمو (${paternalUncles} نفر)`, fraction: '', amount: singleShare * 2 * paternalUncles });
+                     if(paternalAunts > 0) results.push({ heir: `عمه (${paternalAunts} نفر)`, fraction: '', amount: singleShare * paternalAunts });
+                 }
+
+                 if (maternalSideHeirs > 0) {
+                     const singleShare = maternalSideShare / maternalSideHeirs;
+                     if(maternalUncles > 0) results.push({ heir: `دایی (${maternalUncles} نفر)`, fraction: '', amount: singleShare * maternalUncles });
+                     if(maternalAunts > 0) results.push({ heir: `خاله (${maternalAunts} نفر)`, fraction: '', amount: singleShare * maternalAunts });
+                 }
+            },
+
             displayResults: function(results, notes, summary) {
+                const chartData = {
+                    labels: results.map(r => r.heir),
+                    datasets: [{
+                        data: results.map(r => r.amount),
+                        backgroundColor: ['#22d3ee', '#818cf8', '#f472b6', '#fbbf24', '#4ade80', '#a78bfa', '#60a5fa', '#f87171'],
+                        borderColor: '#1e293b',
+                    }]
+                };
+
                 let finalTotalDistributed = 0;
                 let resultBodyHTML = '';
                 results.forEach(res => {
@@ -214,29 +302,62 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
                 let notesHTML = notes.map(note => `<li>${note}</li>`).join('');
 
-                const content = `
-                    <div class="result-card">
-                        <div class="mb-8 p-6 bg-slate-900/50 border border-slate-700 rounded-lg">
-                            <h3 class="text-xl font-bold text-center mb-4 text-slate-200">خلاصه محاسبات ماترک</h3>
-                            <table class="w-full summary-table"><tbody>
-                                <tr><td class="font-medium text-slate-300">کل ماترک (ناخالص):</td><td class="font-mono text-left text-slate-100">${this.utils.formatAmount(summary.totalAssets)} تومان</td></tr>
-                                <tr><td class="font-medium text-slate-300">کسر دیون و وصیت:</td><td class="font-mono text-left text-red-400">( ${this.utils.formatAmount(summary.totalDeductions)} ) تومان</td></tr>
-                                <tr class="border-t-2 border-slate-700"><td class="font-bold text-slate-100 pt-4">ماترک خالص (قابل تقسیم):</td><td class="font-mono text-left font-bold text-green-400 pt-4">${this.utils.formatAmount(Math.round(summary.netAssets))} تومان</td></tr>
-                            </tbody></table>
-                        </div>
-                        <h2 class="text-2xl font-bold text-center mb-6 text-slate-100">نتیجه تقسیم ارث</h2>
-                        <div class="overflow-x-auto">
-                            <table class="min-w-full result-table">
-                                <thead><tr><th class="font-semibold text-slate-300">وارث</th><th class="font-semibold text-slate-300">سهم (کسری)</th><th class="font-semibold text-slate-300">مبلغ سهم (تومان)</th></tr></thead>
-                                <tbody>${resultBodyHTML}</tbody>
-                                <tfoot><tr><td colspan="2" class="text-right pr-6">جمع کل</td><td class="text-cyan-400">${this.utils.formatAmount(Math.round(finalTotalDistributed))} تومان</td></tr></tfoot>
-                            </table>
-                        </div>
-                        <div class="mt-6 p-4 bg-yellow-900/20 border-r-4 border-yellow-600 text-yellow-200 rounded-lg">
-                            <h4 class="font-bold">توضیحات:</h4><ul class="list-disc list-inside mt-2 space-y-1">${notesHTML}</ul>
-                        </div>
+                const tableContent = `
+                    <div class="mb-8 p-6 bg-slate-900/50 border border-slate-700 rounded-lg">
+                        <h3 class="text-xl font-bold text-center mb-4 text-slate-200">خلاصه محاسبات ماترک</h3>
+                        <table class="w-full summary-table"><tbody>
+                            <tr><td class="font-medium text-slate-300">کل ماترک (ناخالص):</td><td class="font-mono text-left text-slate-100">${this.utils.formatAmount(summary.totalAssets)} تومان</td></tr>
+                            <tr><td class="font-medium text-slate-300">کسر دیون و وصیت:</td><td class="font-mono text-left text-red-400">( ${this.utils.formatAmount(summary.totalDeductions)} ) تومان</td></tr>
+                            <tr class="border-t-2 border-slate-700"><td class="font-bold text-slate-100 pt-4">ماترک خالص (قابل تقسیم):</td><td class="font-mono text-left font-bold text-green-400 pt-4">${this.utils.formatAmount(Math.round(summary.netAssets))} تومان</td></tr>
+                        </tbody></table>
+                    </div>
+                    <h2 class="text-2xl font-bold text-center mb-6 text-slate-100">جدول دقیق تقسیم ارث</h2>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full result-table">
+                            <thead><tr><th class="font-semibold text-slate-300">وارث</th><th class="font-semibold text-slate-300">سهم (کسری)</th><th class="font-semibold text-slate-300">مبلغ سهم (تومان)</th></tr></thead>
+                            <tbody>${resultBodyHTML}</tbody>
+                            <tfoot><tr><td colspan="2" class="text-right pr-6">جمع کل</td><td class="text-cyan-400">${this.utils.formatAmount(Math.round(finalTotalDistributed))} تومان</td></tr></tfoot>
+                        </table>
+                    </div>
+                    <div class="mt-6 p-4 bg-yellow-900/20 border-r-4 border-yellow-600 text-yellow-200 rounded-lg">
+                        <h4 class="font-bold">توضیحات:</h4><ul class="list-disc list-inside mt-2 space-y-1">${notesHTML}</ul>
                     </div>`;
-                this.utils.showResult(this.resultDiv, content);
+
+                this.tableContainer.innerHTML = tableContent;
+                this.utils.showResult(this.resultDiv);
+                this.renderChart(chartData);
+            },
+            renderChart: function(data) {
+                const ctx = document.getElementById('inheritance-chart').getContext('2d');
+                this.chart = new Chart(ctx, {
+                    type: 'pie',
+                    data: data,
+                    options: {
+                        responsive: true,
+                        plugins: {
+                            legend: {
+                                position: 'top',
+                                labels: {
+                                    color: '#cbd5e1',
+                                    font: { family: 'Vazirmatn' }
+                                }
+                            },
+                            tooltip: {
+                                callbacks: {
+                                    label: (context) => {
+                                        let label = context.label || '';
+                                        if (label) { label += ': '; }
+                                        const value = context.parsed;
+                                        const total = context.chart.getDatasetMeta(0).total;
+                                        const percentage = total > 0 ? ((value / total) * 100).toFixed(2) : 0;
+                                        label += `${this.utils.formatAmount(Math.round(value))} تومان (${percentage}%)`;
+                                        return label;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
             }
         },
 
@@ -428,22 +549,72 @@ document.addEventListener('DOMContentLoaded', () => {
         },
 
         nafaqeh: {
+            chart: null,
             init: function(utils) {
                 this.utils = utils;
                 this.inputs = document.querySelectorAll('.nafaqeh-input');
                 this.resultDiv = document.getElementById('result-section-nafaqeh');
                 this.inputs.forEach(input => input.addEventListener('keyup', () => this.calculate()));
-                this.calculate(); // Initial calculation
+                this.calculate();
             },
             calculate: function() {
-                let total = 0;
-                this.inputs.forEach(input => {
-                    total += parseFloat(input.value.replace(/,/g, '')) || 0;
+                const data = [
+                    { label: 'مسکن', value: this.utils.getFloat('nafaqeh-housing') },
+                    { label: 'خوراک', value: this.utils.getFloat('nafaqeh-food') },
+                    { label: 'پوشاک', value: this.utils.getFloat('nafaqeh-clothing') },
+                    { label: 'درمان', value: this.utils.getFloat('nafaqeh-health') },
+                    { label: 'رفت و آمد', value: this.utils.getFloat('nafaqeh-transport') },
+                    { label: 'سایر', value: this.utils.getFloat('nafaqeh-other') },
+                ];
+
+                const total = data.reduce((sum, item) => sum + item.value, 0);
+
+                if (total > 0) {
+                    this.utils.showResult(this.resultDiv);
+                    this.renderChart(data, total);
+                } else {
+                    this.utils.hideResult(this.resultDiv);
+                }
+            },
+            renderChart: function(data, total) {
+                if (this.chart) {
+                    this.chart.destroy();
+                }
+                const ctx = document.getElementById('nafaqeh-chart').getContext('2d');
+                this.chart = new Chart(ctx, {
+                    type: 'bar',
+                    data: {
+                        labels: data.map(d => d.label),
+                        datasets: [{
+                            label: 'هزینه (تومان)',
+                            data: data.map(d => d.value),
+                            backgroundColor: ['#38bdf8', '#818cf8', '#e879f9', '#facc15', '#4ade80', '#9ca3af'],
+                            borderRadius: 5,
+                        }]
+                    },
+                    options: {
+                        indexAxis: 'y',
+                        responsive: true,
+                        plugins: {
+                            legend: { display: false },
+                            title: {
+                                display: true,
+                                text: `مجموع نفقه ماهانه: ${this.utils.formatAmount(total)} تومان`,
+                                color: '#f1f5f9',
+                                font: { size: 18, family: 'Vazirmatn' }
+                            }
+                        },
+                        scales: {
+                            x: {
+                                ticks: { color: '#94a3b8' },
+                                grid: { color: 'rgba(148, 163, 184, 0.2)' }
+                            },
+                            y: {
+                                ticks: { color: '#94a3b8', font: { family: 'Vazirmatn' } }
+                            }
+                        }
+                    }
                 });
-                const title = `مجموع هزینه‌های برآورد شده ماهیانه:`;
-                const value = `${this.utils.formatAmount(total)} تومان`;
-                const content = `<div class="result-card text-center"><p class="text-lg text-slate-300">${title}</p><p class="text-4xl font-bold text-pink-400 mt-2">${value}</p></div>`;
-                this.utils.showResult(this.resultDiv, content);
             }
         }
     };

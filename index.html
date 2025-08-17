@@ -8,6 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <link rel="stylesheet" href="css/style.css">
 </head>
 <body class="bg-slate-900 text-slate-300 antialiased">
@@ -60,10 +61,11 @@
             <div id="inheritance" class="tab-content hidden">
                 <form id="form-section-inheritance">
                     <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                        <div class="form-section"><h3 class="text-xl font-semibold mb-4 text-slate-300 border-b border-slate-600 pb-3">۱. اطلاعات ماترک</h3>
+                        <div class="form-section"><h3 class="text-xl font-semibold mb-4 text-slate-300 border-b border-slate-600 pb-3">۱. اطلاعات کلی</h3>
                             <div class="space-y-4">
                                 <div><label for="total-assets" class="block text-md font-medium text-slate-300 mb-2">ارزش کل ماترک (تومان)</label><input type="text" id="total-assets" class="w-full text-left" placeholder="مثال: 1,000,000,000"></div>
                                 <div><label for="deceased-gender" class="block text-md font-medium text-slate-300 mb-2">جنسیت متوفی</label><select id="deceased-gender" class="w-full"><option value="male">مرد</option><option value="female">زن</option></select></div>
+                                <div id="wife-count-container"><label for="wife-count" class="block text-md font-medium text-slate-300 mb-2">تعداد همسران دائم</label><input type="number" id="wife-count" min="0" max="4" value="1" class="w-full p-2 text-center"></div>
                             </div>
                         </div>
                         <div class="form-section"><h3 class="text-xl font-semibold mb-4 text-slate-300 border-b border-slate-600 pb-3">۲. دیون و وصیت</h3>
@@ -75,23 +77,91 @@
                                 <div><label for="other-debts" class="block text-sm font-medium text-slate-400">سایر دیون (وام و...)</label><input type="text" id="other-debts" class="w-full text-left mt-1" placeholder="0"></div>
                             </div>
                         </div>
-                        <div class="form-section"><h3 class="text-xl font-semibold mb-4 text-slate-300 border-b border-slate-600 pb-3">۳. اطلاعات وراث (طبقه اول)</h3>
+                        <div class="form-section"><h3 class="text-xl font-semibold mb-4 text-slate-300 border-b border-slate-600 pb-3">۳. طبقه وراث</h3>
+                            <label for="heir-class" class="block text-md font-medium text-slate-300 mb-2">طبقه وراث حاضر را انتخاب کنید:</label>
+                            <select id="heir-class" class="w-full">
+                                <option value="1">طبقه اول (پدر، مادر، فرزندان)</option>
+                                <option value="2">طبقه دوم (اجداد، خواهر و برادر)</option>
+                                <option value="3">طبقه سوم (عمو، عمه، خاله، دایی)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Class 1 Heirs -->
+                    <div id="heirs-class-1" class="heir-class-section grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="form-section"><h3 class="text-lg font-semibold mb-3 text-slate-300">والدین</h3>
                             <div class="space-y-4">
-                                <div class="flex items-center justify-between"><label for="wife-count" class="text-md font-medium text-slate-300">تعداد همسران دائم</label><input type="number" id="wife-count" min="0" max="4" value="1" class="w-24 p-2 text-center"></div>
                                 <div class="flex items-center justify-between"><span class="text-md font-medium text-slate-300">پدر در قید حیات است؟</span><input type="checkbox" id="father-alive"></div>
                                 <div class="flex items-center justify-between"><span class="text-md font-medium text-slate-300">مادر در قید حیات است؟</span><input type="checkbox" id="mother-alive"></div>
+                            </div>
+                        </div>
+                        <div class="form-section"><h3 class="text-lg font-semibold mb-3 text-slate-300">فرزندان</h3>
+                            <div class="space-y-4">
                                 <div class="flex items-center justify-between"><label for="son-count" class="text-md font-medium text-slate-300">تعداد پسران</label><input type="number" id="son-count" min="0" value="0" class="w-24 p-2 text-center"></div>
                                 <div class="flex items-center justify-between"><label for="daughter-count" class="text-md font-medium text-slate-300">تعداد دختران</label><input type="number" id="daughter-count" min="0" value="0" class="w-24 p-2 text-center"></div>
                             </div>
                         </div>
                     </div>
+
+                    <!-- Class 2 Heirs -->
+                    <div id="heirs-class-2" class="heir-class-section hidden grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                        <div class="form-section"><h3 class="text-lg font-semibold mb-3 text-slate-300">اجداد</h3>
+                             <div class="space-y-4">
+                                <div class="flex items-center justify-between"><span class="text-md font-medium text-slate-300">جد پدری (پدرِپدر)</span><input type="checkbox" id="paternal-grandfather-alive"></div>
+                                <div class="flex items-center justify-between"><span class="text-md font-medium text-slate-300">جده پدری (مادرِپدر)</span><input type="checkbox" id="paternal-grandmother-alive"></div>
+                                <div class="flex items-center justify-between"><span class="text-md font-medium text-slate-300">جد مادری (پدرِمادر)</span><input type="checkbox" id="maternal-grandfather-alive"></div>
+                                <div class="flex items-center justify-between"><span class="text-md font-medium text-slate-300">جده مادری (مادرِمادر)</span><input type="checkbox" id="maternal-grandmother-alive"></div>
+                            </div>
+                        </div>
+                        <div class="form-section"><h3 class="text-lg font-semibold mb-3 text-slate-300">خواهر و برادر</h3>
+                            <div class="space-y-2">
+                                <label class="block text-sm font-medium text-slate-400">از یک پدر و مادر (ابوینی)</label>
+                                <div class="flex items-center justify-between"><label for="full-brother-count" class="text-md font-medium text-slate-300">برادر</label><input type="number" id="full-brother-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                                <div class="flex items-center justify-between"><label for="full-sister-count" class="text-md font-medium text-slate-300">خواهر</label><input type="number" id="full-sister-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                                <label class="block text-sm font-medium text-slate-400 pt-2">فقط از یک پدر (ابی)</label>
+                                <div class="flex items-center justify-between"><label for="paternal-brother-count" class="text-md font-medium text-slate-300">برادر</label><input type="number" id="paternal-brother-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                                <div class="flex items-center justify-between"><label for="paternal-sister-count" class="text-md font-medium text-slate-300">خواهر</label><input type="number" id="paternal-sister-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                                <label class="block text-sm font-medium text-slate-400 pt-2">فقط از یک مادر (امی)</label>
+                                <div class="flex items-center justify-between"><label for="maternal-sibling-count" class="text-md font-medium text-slate-300">تعداد (برادر و خواهر)</label><input type="number" id="maternal-sibling-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Class 3 Heirs -->
+                    <div id="heirs-class-3" class="heir-class-section hidden grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                         <div class="form-section"><h3 class="text-lg font-semibold mb-3 text-slate-300">اعمام و اخوال (وراث پدری)</h3>
+                            <p class="text-xs text-slate-400 mb-2">عمو، عمه، و فرزندانشان</p>
+                             <div class="space-y-2">
+                                <div class="flex items-center justify-between"><label for="paternal-uncle-count" class="text-md font-medium text-slate-300">تعداد عمو</label><input type="number" id="paternal-uncle-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                                <div class="flex items-center justify-between"><label for="paternal-aunt-count" class="text-md font-medium text-slate-300">تعداد عمه</label><input type="number" id="paternal-aunt-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                            </div>
+                        </div>
+                        <div class="form-section"><h3 class="text-lg font-semibold mb-3 text-slate-300">اعمام و اخوال (وراث مادری)</h3>
+                             <p class="text-xs text-slate-400 mb-2">دایی، خاله، و فرزندانشان</p>
+                             <div class="space-y-2">
+                                <div class="flex items-center justify-between"><label for="maternal-uncle-count" class="text-md font-medium text-slate-300">تعداد دایی</label><input type="number" id="maternal-uncle-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                                <div class="flex items-center justify-between"><label for="maternal-aunt-count" class="text-md font-medium text-slate-300">تعداد خاله</label><input type="number" id="maternal-aunt-count" min="0" value="0" class="w-20 p-1 text-center"></div>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="mt-8 flex flex-col sm:flex-row justify-center items-center gap-4">
                         <button type="button" id="calculate-btn-inheritance" class="custom-btn btn-primary w-full sm:w-auto">محاسبه کن</button>
                         <button type="button" id="reset-btn-inheritance" class="custom-btn btn-secondary w-full sm:w-auto">پاک کردن فرم</button>
                     </div>
                 </form>
                 <div id="error-message-inheritance" class="hidden error-message my-6" role="alert"></div>
-                <div id="result-section-inheritance" class="result-section mt-10"></div>
+                <div id="result-section-inheritance" class="result-section mt-10 hidden">
+                    <div class="result-card">
+                        <h2 class="text-2xl font-bold text-center mb-6 text-slate-100">نمودار تقسیم ارث</h2>
+                        <div class="w-full max-w-md mx-auto mb-10">
+                           <canvas id="inheritance-chart"></canvas>
+                        </div>
+                        <div id="inheritance-table-container">
+                            <!-- Table will be rendered here by JS -->
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Mahr Tab -->
@@ -192,7 +262,14 @@
                     <div><label class="block text-md font-medium text-slate-300">هزینه رفت و آمد</label><input type="text" id="nafaqeh-transport" class="nafaqeh-input w-full mt-1 text-left" placeholder="0"></div>
                     <div><label class="block text-md font-medium text-slate-300">سایر هزینه‌های متعارف</label><input type="text" id="nafaqeh-other" class="nafaqeh-input w-full mt-1 text-left" placeholder="0"></div>
                 </div>
-                <div id="result-section-nafaqeh" class="result-section mt-8"></div>
+                <div id="result-section-nafaqeh" class="result-section mt-8 hidden">
+                     <div class="result-card">
+                        <h2 class="text-2xl font-bold text-center mb-6 text-slate-100">نمودار تفکیک نفقه</h2>
+                         <div class="w-full max-w-2xl mx-auto">
+                            <canvas id="nafaqeh-chart"></canvas>
+                        </div>
+                    </div>
+                </div>
                 <div class="mt-6 text-sm text-slate-400 p-4 bg-slate-800/50 rounded-lg"><p><strong>سلب مسئولیت مهم:</strong> نفقه شامل همه نیازهای متعارف و متناسب با وضعیت زن است. مبلغ نهایی نفقه توسط کارشناس رسمی دادگستری و با در نظر گرفتن شأن زوجه و وضعیت مالی زوج تعیین می‌گردد و این محاسبه صرفاً یک برآورد اولیه است.</p></div>
             </div>
         </main>
